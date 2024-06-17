@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SERVICE_FILE="/etc/systemd/system/dnstt-server.service"
+
 # Function to determine architecture
 determine_architecture() {
     ARCH=$(uname -m)
@@ -33,9 +35,8 @@ generate_keys() {
     ./$FILENAME -gen-key -privkey-file server.key -pubkey-file server.pub
 }
 
-# Create systemd service file
-create_systemd_service() {
-    SERVICE_FILE="/etc/systemd/system/dnstt-server.service"
+# Create or update systemd service file
+create_or_update_systemd_service() {
     echo "[Unit]
 Description=DNSTT Server
 After=network.target
@@ -53,7 +54,7 @@ WantedBy=multi-user.target" | sudo tee $SERVICE_FILE
 start_systemd_service() {
     sudo systemctl daemon-reload
     sudo systemctl enable dnstt-server
-    sudo systemctl start dnstt-server
+    sudo systemctl restart dnstt-server
 }
 
 # Set up iptables rules
@@ -73,16 +74,43 @@ print_results() {
     echo "Listen Address: $LISTEN_ADDR"
 }
 
+# Update NS and listenAddr
+update_details() {
+    read -p "Enter new NS (e.g., nn.achraf53.xyz): " NS
+    read -p "Enter new listenAddr (e.g., 127.0.0.1:22): " LISTEN_ADDR
+    create_or_update_systemd_service
+    start_systemd_service
+    echo "Service updated and restarted."
+}
+
+# Create user and set password
+create_user() {
+    read -p "Enter username: " USERNAME
+    read -sp "Enter password: " PASSWORD
+    echo
+    sudo useradd -m -s /bin/bash $USERNAME
+    echo "$USERNAME:$PASSWORD" | sudo chpasswd
+    sudo usermod -aG sudo $USERNAME
+    echo "User $USERNAME created and added to sudo group."
+}
+
 # Main script execution
 main() {
     determine_architecture
     download_dnstt_server
     prompt_for_details
     generate_keys
-    create_systemd_service
+    create_or_update_systemd_service
     start_systemd_service
     setup_iptables
     print_results
 }
 
-main
+# Check for update or user creation flag
+if [[ "$1" == "--update" ]]; then
+    update_details
+elif [[ "$1" == "--create-user" ]]; then
+    create_user
+else
+    main
+fi
