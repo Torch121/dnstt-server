@@ -85,15 +85,6 @@ print_results() {
     echo -e "${YELLOW}Listen Address:${NC} $LISTEN_ADDR"
 }
 
-# Show current configuration information
-show_current_info() {
-    PUBKEY=$(cat server.pub)
-    echo -e "${YELLOW}Current Configuration Information:${NC}"
-    echo -e "${YELLOW}Public Key:${NC} $PUBKEY"
-    echo -e "${YELLOW}NS:${NC} $NS"
-    echo -e "${YELLOW}Listen Address:${NC} $LISTEN_ADDR"
-}
-
 # Update NS and listenAddr
 update_details() {
     echo -e "${YELLOW}Enter new NS (e.g., nn.achraf53.xyz):${NC}"
@@ -129,14 +120,12 @@ main() {
     print_results
 }
 
-# Check for command line options
+# Check for update or user creation flag
 if [[ "$1" == "--update" ]]; then
     determine_architecture
     update_details
 elif [[ "$1" == "--create-user" ]]; then
     create_user
-elif [[ "$1" == "--show-info" ]]; then
-    show_current_info
 else
     main
 fi
