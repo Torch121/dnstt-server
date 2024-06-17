@@ -90,8 +90,8 @@ update_details() {
     # Extract current NS and listenAddr from service file
     if [[ -f "$SERVICE_FILE" ]]; then
         CURRENT_EXEC_START=$(grep 'ExecStart' "$SERVICE_FILE")
-        CURRENT_NS=$(echo "$CURRENT_EXEC_START" | awk '{print $NF-1}')
-        CURRENT_LISTEN_ADDR=$(echo "$CURRENT_EXEC_START" | awk '{print $NF}')
+        CURRENT_NS=$(echo "$CURRENT_EXEC_START" | sed -n 's/.* -privkey-file .* \([^ ]*\) .*/\1/p')
+        CURRENT_LISTEN_ADDR=$(echo "$CURRENT_EXEC_START" | sed -n 's/.* -privkey-file .* [^ ]* \([^ ]*\)$/\1/p')
         echo -e "${YELLOW}Current NS:${NC} $CURRENT_NS"
         echo -e "${YELLOW}Current Listen Address:${NC} $CURRENT_LISTEN_ADDR"
     else
