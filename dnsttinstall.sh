@@ -85,19 +85,17 @@ print_results() {
     echo -e "${YELLOW}Listen Address:${NC} $LISTEN_ADDR"
 }
 
+# Show current configuration information
+show_current_info() {
+    PUBKEY=$(cat server.pub)
+    echo -e "${YELLOW}Current Configuration Information:${NC}"
+    echo -e "${YELLOW}Public Key:${NC} $PUBKEY"
+    echo -e "${YELLOW}NS:${NC} $NS"
+    echo -e "${YELLOW}Listen Address:${NC} $LISTEN_ADDR"
+}
+
 # Update NS and listenAddr
 update_details() {
-    # Extract current NS and listenAddr from service file
-    if [[ -f "$SERVICE_FILE" ]]; then
-        CURRENT_EXEC_START=$(grep 'ExecStart' "$SERVICE_FILE")
-        CURRENT_NS=$(echo "$CURRENT_EXEC_START" | sed -n 's/.* -privkey-file .* \([^ ]*\) .*/\1/p')
-        CURRENT_LISTEN_ADDR=$(echo "$CURRENT_EXEC_START" | sed -n 's/.* -privkey-file .* [^ ]* \([^ ]*\)$/\1/p')
-        echo -e "${YELLOW}Current NS:${NC} $CURRENT_NS"
-        echo -e "${YELLOW}Current Listen Address:${NC} $CURRENT_LISTEN_ADDR"
-    else
-        echo -e "${YELLOW}No existing service file found. Proceeding with new details.${NC}"
-    fi
-
     echo -e "${YELLOW}Enter new NS (e.g., nn.achraf53.xyz):${NC}"
     read -p "" NS
     echo -e "${YELLOW}Enter new listenAddr (e.g., 127.0.0.1:22):${NC}"
@@ -131,12 +129,14 @@ main() {
     print_results
 }
 
-# Check for update or user creation flag
+# Check for command line options
 if [[ "$1" == "--update" ]]; then
     determine_architecture
     update_details
 elif [[ "$1" == "--create-user" ]]; then
     create_user
+elif [[ "$1" == "--show-info" ]]; then
+    show_current_info
 else
     main
 fi
