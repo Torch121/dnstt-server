@@ -2,8 +2,6 @@
 
 SERVICE_FILE="/etc/systemd/system/dnstt-server.service"
 FILENAME=""
-DNSTT_USER="dnstt"
-DNSTT_HOME="/var/lib/dnstt"
 
 # Define color codes for terminal text
 YELLOW='\033[1;33m'
@@ -37,7 +35,7 @@ download_dnstt_server() {
 
 # Prompt for NS and listenAddr with yellow text
 prompt_for_details() {
-    echo -e "${YELLOW}Enter NS (e.g., nn.achraf53.xyz):${NC}"
+    echo -e "${YELLOW}Enter NS (e.g., ns.example.com):${NC}"
     read -p "" NS
     echo -e "${YELLOW}Enter listenAddr (e.g., 127.0.0.1:22):${NC}"
     read -p "" LISTEN_ADDR
@@ -45,7 +43,7 @@ prompt_for_details() {
 
 # Generate key files
 generate_keys() {
-    sudo -u $DNSTT_USER ./$FILENAME -gen-key -privkey-file $DNSTT_HOME/server.key -pubkey-file $DNSTT_HOME/server.pub
+    ./$FILENAME -gen-key -privkey-file server.key -pubkey-file server.pub
 }
 
 # Create or update systemd service file
@@ -55,9 +53,8 @@ Description=DNSTT Server
 After=network.target
 
 [Service]
-User=$DNSTT_USER
-ExecStart=$DNSTT_HOME/$FILENAME -udp :5300 -privkey-file $DNSTT_HOME/server.key $NS $LISTEN_ADDR
-WorkingDirectory=$DNSTT_HOME
+ExecStart=$(pwd)/$FILENAME -udp :5300 -privkey-file $(pwd)/server.key $NS $LISTEN_ADDR
+WorkingDirectory=$(pwd)
 Restart=always
 
 [Install]
@@ -81,7 +78,7 @@ setup_iptables() {
 
 # Print results in yellow text
 print_results() {
-    PUBKEY=$(cat $DNSTT_HOME/server.pub)
+    PUBKEY=$(cat server.pub)
     echo -e "${YELLOW}Installation complete.${NC}"
     echo -e "${YELLOW}Public Key:${NC} $PUBKEY"
     echo -e "${YELLOW}NS:${NC} $NS"
@@ -90,8 +87,8 @@ print_results() {
 
 # Show current configuration information
 show_info() {
-    if [[ -f "$DNSTT_HOME/server.pub" ]]; then
-        PUBKEY=$(cat $DNSTT_HOME/server.pub)
+    if [[ -f "server.pub" ]]; then
+        PUBKEY=$(cat server.pub)
     else
         PUBKEY="No public key found."
     fi
@@ -124,7 +121,7 @@ update_details() {
         echo -e "${YELLOW}No existing service file found. Proceeding with new details.${NC}"
     fi
 
-    echo -e "${YELLOW}Enter new NS (e.g., nn.achraf53.xyz):${NC}"
+    echo -e "${YELLOW}Enter new NS (e.g., ns.example.com):${NC}"
     read -p "" NS
     echo -e "${YELLOW}Enter new listenAddr (e.g., 127.0.0.1:22):${NC}"
     read -p "" LISTEN_ADDR
@@ -133,28 +130,21 @@ update_details() {
     echo -e "${YELLOW}Service updated and restarted.${NC}"
 }
 
-# Create user for DNSTT service
+# Create user and set password (without enforcing password complexity)
 create_user() {
-    if id "$DNSTT_USER" &>/dev/null; then
-        echo -e "${YELLOW}User $DNSTT_USER already exists.${NC}"
-    else
-        sudo useradd -m -s /bin/bash -d $DNSTT_HOME -c "User for DNSTT service" $DNSTT_USER
-        echo -e "${YELLOW}User $DNSTT_USER created for DNSTT service.${NC}"
-    fi
-
-    echo -e "${YELLOW}Enter password for $DNSTT_USER:${NC}"
-    read -s PASSWORD
-    echo "$DNSTT_USER:$PASSWORD" | sudo chpasswd
-
-    sudo mkdir -p $DNSTT_HOME
-    sudo chown -R $DNSTT_USER:$(id -gn $DNSTT_USER) $DNSTT_HOME
-    echo -e "${YELLOW}Password set and home directory created.${NC}"
+    echo -e "${YELLOW}Enter username:${NC}"
+    read -p "" USERNAME
+    echo -e "${YELLOW}Enter password:${NC}"
+    read -p "" PASSWORD
+    echo
+    echo "$USERNAME:$PASSWORD" | sudo chpasswd
+    sudo usermod -aG sudo $USERNAME
+    echo -e "${YELLOW}User $USERNAME created and added to sudo group.${NC}"
 }
 
 # Main script execution
 main() {
     determine_architecture
-    create_user
     download_dnstt_server
     prompt_for_details
     generate_keys
