@@ -24,7 +24,7 @@ download_dnstt_server() {
 
 # Prompt for NS and listenAddr
 prompt_for_details() {
-    read -p "Enter NS (e.g., nn.achraf53.xyz): " NS
+    read -p "Enter NS (e.g., ns.example.com): " NS
     read -p "Enter listenAddr (e.g., 127.0.0.1:22): " LISTEN_ADDR
 }
 
@@ -33,10 +33,27 @@ generate_keys() {
     ./$FILENAME -gen-key -privkey-file server.key -pubkey-file server.pub
 }
 
-# Start dnstt-server in a screen session
-start_dnstt_server() {
-    chmod +x ./$FILENAME
-    screen -dmS dnstt_server ./$FILENAME -udp :5300 -privkey-file server.key $NS $LISTEN_ADDR
+# Create systemd service file
+create_systemd_service() {
+    SERVICE_FILE="/etc/systemd/system/dnstt-server.service"
+    echo "[Unit]
+Description=DNSTT Server
+After=network.target
+
+[Service]
+ExecStart=$(pwd)/$FILENAME -udp :5300 -privkey-file $(pwd)/server.key $NS $LISTEN_ADDR
+WorkingDirectory=$(pwd)
+Restart=always
+
+[Install]
+WantedBy=multi-user.target" | sudo tee $SERVICE_FILE
+}
+
+# Start and enable the systemd service
+start_systemd_service() {
+    sudo systemctl daemon-reload
+    sudo systemctl enable dnstt-server
+    sudo systemctl start dnstt-server
 }
 
 # Set up iptables rules
@@ -62,7 +79,8 @@ main() {
     download_dnstt_server
     prompt_for_details
     generate_keys
-    start_dnstt_server
+    create_systemd_service
+    start_systemd_service
     setup_iptables
     print_results
 }
