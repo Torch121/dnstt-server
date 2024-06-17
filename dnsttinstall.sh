@@ -1,6 +1,7 @@
 #!/bin/bash
 
 SERVICE_FILE="/etc/systemd/system/dnstt-server.service"
+FILENAME=""
 
 # Function to determine architecture
 determine_architecture() {
@@ -108,6 +109,7 @@ main() {
 
 # Check for update or user creation flag
 if [[ "$1" == "--update" ]]; then
+    determine_architecture
     update_details
 elif [[ "$1" == "--create-user" ]]; then
     create_user
