@@ -3,6 +3,10 @@
 SERVICE_FILE="/etc/systemd/system/dnstt-server.service"
 FILENAME=""
 
+# Define color codes for terminal text
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
 # Function to determine architecture
 determine_architecture() {
     ARCH=$(uname -m)
@@ -20,15 +24,21 @@ determine_architecture() {
 
 # Function to download the appropriate dnstt-server file
 download_dnstt_server() {
-    echo "Downloading $FILENAME..."
-    wget -q "https://github.com/Torch121/dnstt-server/releases/latest/download/$FILENAME"
-    chmod +x "$FILENAME"
+    if [[ -f "$FILENAME" ]]; then
+        echo "File $FILENAME already exists. Skipping download."
+    else
+        echo "Downloading $FILENAME..."
+        wget -q "https://github.com/Torch121/dnstt-server/releases/latest/download/$FILENAME"
+        chmod +x "$FILENAME"
+    fi
 }
 
-# Prompt for NS and listenAddr
+# Prompt for NS and listenAddr with yellow text
 prompt_for_details() {
-    read -p "Enter NS (e.g., nn.achraf53.xyz): " NS
-    read -p "Enter listenAddr (e.g., 127.0.0.1:22): " LISTEN_ADDR
+    echo -e "${YELLOW}Enter NS (e.g., nn.achraf53.xyz):${NC}"
+    read -p "" NS
+    echo -e "${YELLOW}Enter listenAddr (e.g., 127.0.0.1:22):${NC}"
+    read -p "" LISTEN_ADDR
 }
 
 # Generate key files
@@ -77,19 +87,22 @@ print_results() {
 
 # Update NS and listenAddr
 update_details() {
-    read -p "Enter new NS (e.g., nn.achraf53.xyz): " NS
-    read -p "Enter new listenAddr (e.g., 127.0.0.1:22): " LISTEN_ADDR
+    echo -e "${YELLOW}Enter new NS (e.g., nn.achraf53.xyz):${NC}"
+    read -p "" NS
+    echo -e "${YELLOW}Enter new listenAddr (e.g., 127.0.0.1:22):${NC}"
+    read -p "" LISTEN_ADDR
     create_or_update_systemd_service
     start_systemd_service
     echo "Service updated and restarted."
 }
 
-# Create user and set password
+# Create user and set password (without enforcing password complexity)
 create_user() {
-    read -p "Enter username: " USERNAME
-    read -sp "Enter password: " PASSWORD
+    echo -e "${YELLOW}Enter username:${NC}"
+    read -p "" USERNAME
+    echo -e "${YELLOW}Enter password:${NC}"
+    read -p "" PASSWORD
     echo
-    sudo useradd -m -s /bin/bash $USERNAME
     echo "$USERNAME:$PASSWORD" | sudo chpasswd
     sudo usermod -aG sudo $USERNAME
     echo "User $USERNAME created and added to sudo group."
