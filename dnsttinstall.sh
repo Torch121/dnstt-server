@@ -132,7 +132,7 @@ update_details() {
     echo -e "${YELLOW}Service updated and restarted.${NC}"
 }
 
-# Create user and set password for DNSTT service
+# Create user for DNSTT service
 create_user() {
     if id "$DNSTT_USER" &>/dev/null; then
         echo -e "${YELLOW}User $DNSTT_USER already exists.${NC}"
