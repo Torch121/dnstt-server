@@ -2,6 +2,7 @@
 
 SERVICE_FILE="/etc/systemd/system/dnstt-server.service"
 FILENAME=""
+DNSTT_USER="dnstt"
 
 # Define color codes for terminal text
 YELLOW='\033[1;33m'
@@ -43,7 +44,7 @@ prompt_for_details() {
 
 # Generate key files
 generate_keys() {
-    ./$FILENAME -gen-key -privkey-file server.key -pubkey-file server.pub
+    sudo -u $DNSTT_USER ./$FILENAME -gen-key -privkey-file server.key -pubkey-file server.pub
 }
 
 # Create or update systemd service file
@@ -53,6 +54,7 @@ Description=DNSTT Server
 After=network.target
 
 [Service]
+User=$DNSTT_USER
 ExecStart=$(pwd)/$FILENAME -udp :5300 -privkey-file $(pwd)/server.key $NS $LISTEN_ADDR
 WorkingDirectory=$(pwd)
 Restart=always
@@ -130,21 +132,21 @@ update_details() {
     echo -e "${YELLOW}Service updated and restarted.${NC}"
 }
 
-# Create user and set password (without enforcing password complexity)
+# Create user and set password for DNSTT service
 create_user() {
-    echo -e "${YELLOW}Enter username:${NC}"
-    read -p "" USERNAME
-    echo -e "${YELLOW}Enter password:${NC}"
-    read -p "" PASSWORD
-    echo
-    echo "$USERNAME:$PASSWORD" | sudo chpasswd
-    sudo usermod -aG sudo $USERNAME
-    echo -e "${YELLOW}User $USERNAME created and added to sudo group.${NC}"
+    if id "$DNSTT_USER" &>/dev/null; then
+        echo -e "${YELLOW}User $DNSTT_USER already exists.${NC}"
+    else
+        sudo useradd -r -s /usr/sbin/nologin -d $(pwd) -c "User for DNSTT service" $DNSTT_USER
+        sudo chown -R $DNSTT_USER:$(id -gn $DNSTT_USER) $(pwd)
+        echo -e "${YELLOW}User $DNSTT_USER created for DNSTT service.${NC}"
+    fi
 }
 
 # Main script execution
 main() {
     determine_architecture
+    create_user
     download_dnstt_server
     prompt_for_details
     generate_keys
