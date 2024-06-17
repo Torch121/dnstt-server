@@ -18,7 +18,7 @@ determine_architecture() {
 # Function to download the appropriate dnstt-server file
 download_dnstt_server() {
     echo "Downloading $FILENAME..."
-    wget "https://github.com/Torch121/dnstt-server/releases/latest/download/$FILENAME"
+    wget -q "https://github.com/Torch121/dnstt-server/releases/latest/download/$FILENAME"
     chmod +x "$FILENAME"
 }
 
