@@ -89,8 +89,9 @@ print_results() {
 update_details() {
     # Extract current NS and listenAddr from service file
     if [[ -f "$SERVICE_FILE" ]]; then
-        CURRENT_NS=$(grep 'ExecStart' "$SERVICE_FILE" | awk '{print $5}')
-        CURRENT_LISTEN_ADDR=$(grep 'ExecStart' "$SERVICE_FILE" | awk '{print $6}')
+        CURRENT_EXEC_START=$(grep 'ExecStart' "$SERVICE_FILE")
+        CURRENT_NS=$(echo "$CURRENT_EXEC_START" | awk '{print $NF-1}')
+        CURRENT_LISTEN_ADDR=$(echo "$CURRENT_EXEC_START" | awk '{print $NF}')
         echo -e "${YELLOW}Current NS:${NC} $CURRENT_NS"
         echo -e "${YELLOW}Current Listen Address:${NC} $CURRENT_LISTEN_ADDR"
     else
