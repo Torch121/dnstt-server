@@ -35,6 +35,7 @@ generate_keys() {
 
 # Start dnstt-server in a screen session
 start_dnstt_server() {
+    chmod +x ./$FILENAME
     screen -dmS dnstt_server ./$FILENAME -udp :5300 -privkey-file server.key $NS $LISTEN_ADDR
 }
 
