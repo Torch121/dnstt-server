@@ -76,13 +76,13 @@ setup_iptables() {
     sudo ip6tables -t nat -I PREROUTING -i eth0 -p udp --dport 53 -j REDIRECT --to-ports 5300
 }
 
-# Print results
+# Print results in yellow text
 print_results() {
     PUBKEY=$(cat server.pub)
-    echo "Installation complete."
-    echo "Public Key: $PUBKEY"
-    echo "NS: $NS"
-    echo "Listen Address: $LISTEN_ADDR"
+    echo -e "${YELLOW}Installation complete.${NC}"
+    echo -e "${YELLOW}Public Key:${NC} $PUBKEY"
+    echo -e "${YELLOW}NS:${NC} $NS"
+    echo -e "${YELLOW}Listen Address:${NC} $LISTEN_ADDR"
 }
 
 # Update NS and listenAddr
@@ -93,7 +93,7 @@ update_details() {
     read -p "" LISTEN_ADDR
     create_or_update_systemd_service
     start_systemd_service
-    echo "Service updated and restarted."
+    echo -e "${YELLOW}Service updated and restarted.${NC}"
 }
 
 # Create user and set password (without enforcing password complexity)
@@ -105,7 +105,7 @@ create_user() {
     echo
     echo "$USERNAME:$PASSWORD" | sudo chpasswd
     sudo usermod -aG sudo $USERNAME
-    echo "User $USERNAME created and added to sudo group."
+    echo -e "${YELLOW}User $USERNAME created and added to sudo group.${NC}"
 }
 
 # Main script execution
