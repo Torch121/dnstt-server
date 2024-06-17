@@ -24,7 +24,7 @@ download_dnstt_server() {
 
 # Prompt for NS and listenAddr
 prompt_for_details() {
-    read -p "Enter NS (e.g., ns.example.com): " NS
+    read -p "Enter NS (e.g., nn.achraf53.xyz): " NS
     read -p "Enter listenAddr (e.g., 127.0.0.1:22): " LISTEN_ADDR
 }
 
