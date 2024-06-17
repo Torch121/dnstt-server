@@ -35,7 +35,7 @@ download_dnstt_server() {
 
 # Prompt for NS and listenAddr with yellow text
 prompt_for_details() {
-    echo -e "${YELLOW}Enter NS (e.g., ns.example.com):${NC}"
+    echo -e "${YELLOW}Enter NS (e.g., nn.achraf53.xyz):${NC}"
     read -p "" NS
     echo -e "${YELLOW}Enter listenAddr (e.g., 127.0.0.1:22):${NC}"
     read -p "" LISTEN_ADDR
@@ -121,7 +121,7 @@ update_details() {
         echo -e "${YELLOW}No existing service file found. Proceeding with new details.${NC}"
     fi
 
-    echo -e "${YELLOW}Enter new NS (e.g., ns.example.com):${NC}"
+    echo -e "${YELLOW}Enter new NS (e.g., nn.achraf53.xyz):${NC}"
     read -p "" NS
     echo -e "${YELLOW}Enter new listenAddr (e.g., 127.0.0.1:22):${NC}"
     read -p "" LISTEN_ADDR
